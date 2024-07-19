@@ -1,0 +1,7 @@
+Classifier,Accuracy,ROC-AUC,F1
+Random Forest,1.0,1.0,1.0
+Support Vector Machine,0.5,1.0,0.3333333333333333
+XGBoost,1.0,1.0,1.0
+K-Nearest Neighbors,0.5,1.0,0.3333333333333333
+Multi-Layer Perceptron,1.0,1.0,1.0
+Voting Classifier,1.0,1.0,1.0

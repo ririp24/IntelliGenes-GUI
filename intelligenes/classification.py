@@ -5,6 +5,8 @@ from pandas import DataFrame, Series
 
 # Visualization Libraries
 import matplotlib
+import matplotlib.cm as cm
+import pickle
 
 # Non-interactive backend so that file saving doesn't consume too much memory (no need for mlp GUI)
 matplotlib.use("Agg")
@@ -253,6 +255,12 @@ def classify_features(
     y: Series
     y_t: Series
     x, x_t, y, y_t = train_test_split(X, Y, test_size=test_size, random_state=rand_state)
+    x.to_csv(os.path.join(output_dir, "x.csv"))
+    x_t.to_csv(os.path.join(output_dir,"x_t.csv"))
+    y_t.to_csv(os.path.join(output_dir, "y_t.csv"))
+    y.to_csv(os.path.join(output_dir, "Y.csv"))
+
+    stdout.write(str(x_t.columns))
 
     if use_normalization:
         stdout.write("Normalizing DataFrame")
@@ -501,23 +509,61 @@ def classify_features(
         set_fig_labels(fig.figure, title="Feature Distribution")
         save_fig(fig.figure, os.path.join(output_dir, f"{stem}_Feature-Value-Distribution-Strip.png"))
 
-        stdout.write("Pairwise intra/inter feature correlation plot")
-        pairwise_df = X.join(Y)
-        fig = sns.PairGrid(data=pairwise_df, hue=y_label_col)
-        fig.figure.set_size_inches(2 + num_selected_features * 2, 2 + num_selected_features * 2)
-        fig.map_offdiag(sns.scatterplot)
-        fig.map_diag(sns.kdeplot, fill=True)
-        # needed to push title to top
-        fig.figure.suptitle("Feature Intracorrelations and Intercorrelations", y=1)
-        save_fig(fig.figure, os.path.join(output_dir, f"{stem}_Feature-Correlation-Plot.png"))
+        # stdout.write("Pairwise intra/inter feature correlation plot")
+        # pairwise_df = X.join(Y)
+        # fig = sns.PairGrid(data=pairwise_df, hue=y_label_col)
+        # fig.figure.set_size_inches(2 + num_selected_features * 2, 2 + num_selected_features * 2)
+        # fig.map_offdiag(sns.scatterplot)
+        # fig.map_diag(sns.kdeplot, fill=True)
+        # # needed to push title to top
+        # fig.figure.suptitle("Feature Intracorrelations and Intercorrelations", y=1)
+        # save_fig(fig.figure, os.path.join(output_dir, f"{stem}_Feature-Correlation-Plot.png"))
 
-        stdout.write("Intra/inter feature correlations heatmap")
-        fig = sns.heatmap(correlation_df, cmap="Blues", annot=True, fmt=".2f")
-        fig.figure.set_size_inches(2 + num_selected_features * 0.8, 2 + num_selected_features * 0.8)
-        set_fig_labels(fig.figure, title="Feature Correlations")
-        save_fig(fig.figure, os.path.join(output_dir, f"{stem}_Feature-Correlation-Heatmap.png"))
+        # stdout.write("Intra/inter feature correlations heatmap")
+        # fig = sns.heatmap(correlation_df, cmap="Blues", annot=True, fmt=".2f")
+        # fig.figure.set_size_inches(2 + num_selected_features * 0.8, 2 + num_selected_features * 0.8)
+        # set_fig_labels(fig.figure, title="Feature Correlations")
+        # save_fig(fig.figure, os.path.join(output_dir, f"{stem}_Feature-Correlation-Heatmap.png"))
 
-        plt.close()
+
+        # Visualizing impacts of pairs of variables
+
+        # def genMesh(xvar=x.columns[0], yvar= x.columns[1]):
+        #     # V1: Use median over all other variables
+        #     new_samples = []
+        #     medians = x.median()
+        #     medians.to_csv(os.path.join(output_dir, f"{stem}_medians.csv"))
+        #     xvar_range = np.linspace(x[xvar].min(), x[yvar].max(), 30)
+        #     yvar_range = np.linspace(x[xvar].min(), x[yvar].max(), 30)
+
+        #     for val1 in xvar_range:
+        #         for val2 in yvar_range:
+        #             sample = medians.copy()
+        #             sample[xvar] = val1
+        #             sample[yvar] = val2
+        #             new_samples.append(sample)
+        #     new_df = pd.DataFrame(new_samples)
+        #     fig = plt.figure()
+        #     ax = fig.add_subplot(projection='3d')
+        #     ax.scatter(new_df[xvar], new_df[yvar], classifiers[0].predict_proba(new_df)[:, 1], c=classifiers[0].predict_proba(new_df)[:, 1], cmap=cm.viridis)
+        #     ax.set_xlabel(xvar, fontsize=20)
+        #     ax.set_ylabel(yvar, fontsize=20)
+        #     ax.set_zlabel("Probability", fontsize=20)
+        #     ax.tick_params(labelsize='large')
+        #     ax.plot_trisurf(new_df[xvar], new_df[yvar], classifiers[0].predict_proba(new_df)[:, 1], cmap=cm.viridis)
+        #     fig.set_size_inches(2 + num_selected_features * 0.8, 2 + num_selected_features * 0.8)
+        #     set_fig_labels(fig, title=("testMesh"))
+        #     save_fig(fig, os.path.join(output_dir, f"{stem}_Test_Mesh.png"))
+        #     return
+        # stdout.write("generating testMesh")
+        # genMesh("ENSG00000260592", "ENSG00000239998")  
+        # stdout.write("Finished testMesh")
+        
+
+        
+        pickle.dump(classifiers[0], open(os.path.join(output_dir, f"{stem}_rf.pkl"), 'wb'))
+        # plt.close()
+
 
     stdout.write("Finished Feature Classification")
 

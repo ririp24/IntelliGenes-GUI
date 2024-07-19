@@ -9,6 +9,7 @@ import sys
 from ui.components.page import Page
 from .input.page import InputPage
 from .files.page import OutputFilesPage
+from .viz.page import VizPage
 from .pipeline.page import PipelinePage
 from .help.page import HelpPage
 
@@ -34,7 +35,8 @@ class MainWindow(QMainWindow):
             ("Data Manager", InputPage(self.inputFile, self.outputDir, self.inputPageSignal)),
             ("AI/ML Analysis", PipelinePage(self.inputFile, self.outputDir, self.pipelinePageSignal)),
             ("Visualization", OutputFilesPage(self.inputFile, self.outputDir, self.filesPageSignal)),
-            ("Help", HelpPage(self.inputFile, self.outputDir, self.demoPageSignal)),
+            ("3D", VizPage(self.inputFile, self.outputDir, self.pipelinePageSignal)),
+            ("Help", HelpPage(self.inputFile, self.outputDir, self.demoPageSignal))
         ]
 
         def select_tab(index: int):
