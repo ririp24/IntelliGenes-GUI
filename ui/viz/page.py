@@ -2,7 +2,12 @@
 
 # UI Libraries
 from PySide6.QtCore import Qt, SignalInstance
-from PySide6.QtWidgets import QVBoxLayout, QLabel
+from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QGridLayout
+import sys
+import plotly.graph_objects as go
+import plotly.express as px
+from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWebEngineWidgets import QWebEngineView
 
 # Custom UI libraries
 from ui.components.page import Page
@@ -23,6 +28,8 @@ import pandas as pd
 import pickle
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
+from sklearn.cluster import DBSCAN, OPTICS
+import seaborn as sns
 
 import mplcursors
 
@@ -35,58 +42,40 @@ class VizPage(Page):
         onTabSelected: SignalInstance,
     ) -> None:
         super().__init__(inputFile, outputDir, onTabSelected)
-        self._layout = QVBoxLayout()
-        self._layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._layout = QGridLayout()
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.setLayout(self._layout)
+
+        
 
         self.X = pd.read_csv('data/Full_X.csv')
         self.X.drop(columns=self.X.columns[0], axis=1, inplace=True)
         self.labels = pd.read_csv('data/Y_yea.csv', header=None).to_numpy()[:, 1]
 
+        self.clusterer = OPTICS(min_samples = 0.1)
+        self.clusters = self.clusterer.fit_predict(self.X)
+
         classifiers = []
         self.rf = pickle.load(open('data/rf.pkl', 'rb'))
-        # fig = self.genMesh("ENSG00000260592", "ENSG00000239998") 
-        fig = self.dataDR()
+
+        fig = self.genMesh(xvar='ENSG00000241553', yvar='ENSG00000233276')
         canvas = FigureCanvas(fig)
-        self._layout.addWidget(NavigationToolbar(canvas, self))
-        self._layout.addWidget(canvas)
+        self._layout.addWidget(NavigationToolbar(canvas, self), 0, 0)
+        self._layout.addWidget(canvas, 1, 0)
         
 
-
-
-        
-    def dataDR(self):
-        preds = self.rf.predict_proba(self.X)[:, 1]
-        preds = [pred > 0.5 for pred in preds]
-
-
-        fig = plt.figure()
-        
-        x_low = pd.read_csv('data/X_Low_Final.csv', header=None).to_numpy()
-        ax = fig.add_subplot(1, 2, 1, projection='3d')
-        graph = ax.scatter(x_low[:, 0], x_low[:, 1], x_low[:, 2], c=self.labels, cmap=cm.bwr, alpha=1.0)
-        ax.set_title("Labeled Data")
-
-        ax2 = fig.add_subplot(1, 2, 2, projection='3d', sharex=ax, sharey=ax, sharez=ax)
-        ax2.set_title("Predictions")
-        graph = ax2.scatter(x_low[:, 0], x_low[:, 1], x_low[:, 2], c=preds, cmap=cm.bwr, alpha=1.0)
-
-        ax.shareview(ax2)
-
-        mplcursors.cursor(fig)
-        
-        return fig
 
     def genMesh(self, xvar=None, yvar=None):
         if not xvar: 
             xvar = self.X.columns[0]
+        if not yvar:
             yvar = self.X.columns[1]
         # V1: Use median over all other variables
         new_samples = []
         medians = self.X.median()
         # medians.to_csv(os.path.join(output_dir, f"{stem}_medians.csv"))
-        xvar_range = np.linspace(self.X[xvar].min(), self.X[yvar].max(), 30)
-        yvar_range = np.linspace(self.X[xvar].min(), self.X[yvar].max(), 30)
+        xvar_range = np.linspace(self.X[xvar].min(), self.X[xvar].max(), 30)
+        yvar_range = np.linspace(self.X[yvar].min(), self.X[yvar].max(), 30)
 
         for val1 in xvar_range:
             for val2 in yvar_range: 
@@ -105,6 +94,6 @@ class VizPage(Page):
         ax.set_zlabel("Probability", fontsize=10)
         ax.tick_params(labelsize='medium')
         ax.plot_trisurf(new_df[xvar], new_df[yvar], self.rf.predict_proba(new_df)[:, 1], cmap=cm.viridis)
-        fig.suptitle("Classification Probabilities Across ENSG00000260592 and ENSG00000239998", y=0.95)
+        fig.suptitle(f"Classification Probabilities Across {xvar} and {yvar}", y=0.95)
         return fig
     

@@ -438,14 +438,17 @@ def classify_features(
             if y:
                 g.supylabel(y)
 
-        for name, shap in zip(names, model_shaps):
-            stdout.write(f"Swarm plot for {name}")
-            # handles sizing automatically
-            summary_plot(shap, x_t, plot_type="dot", show=False)
-            ax = plt.gca()
-            fig = plt.gcf()
-            set_ax_labels(ax, title=f"{name} SHAP Scores", x="SHAP Value", y="Feature")
-            save_fig(fig.figure, os.path.join(output_dir, f"{stem}_SHAP-Plot-{name.replace(' ', '-')}.png"))
+        # for name, shap in zip(names, model_shaps):
+        #     stdout.write(f"Swarm plot for {name}")
+        #     # handles sizing automatically
+        #     stdout.write('1')
+        #     summary_plot(shap, x_t, plot_type="dot", show=False)
+        #     stdout.write('2')
+        #     ax = plt.gca()
+        #     fig = plt.gcf()
+        #     set_ax_labels(ax, title=f"{name} SHAP Scores", x="SHAP Value", y="Feature")
+        #     save_fig(fig.figure, os.path.join(output_dir, f"{stem}_SHAP-Plot-{name.replace(' ', '-')}.png"))
+        #     stdout.write('3')
 
         # for name, importances in zip(names, normalized_features_importances):
         #     stdout.write(f"Normalized feature importances plot for {name}")
@@ -509,21 +512,21 @@ def classify_features(
         set_fig_labels(fig.figure, title="Feature Distribution")
         save_fig(fig.figure, os.path.join(output_dir, f"{stem}_Feature-Value-Distribution-Strip.png"))
 
-        # stdout.write("Pairwise intra/inter feature correlation plot")
-        # pairwise_df = X.join(Y)
-        # fig = sns.PairGrid(data=pairwise_df, hue=y_label_col)
-        # fig.figure.set_size_inches(2 + num_selected_features * 2, 2 + num_selected_features * 2)
-        # fig.map_offdiag(sns.scatterplot)
-        # fig.map_diag(sns.kdeplot, fill=True)
-        # # needed to push title to top
-        # fig.figure.suptitle("Feature Intracorrelations and Intercorrelations", y=1)
-        # save_fig(fig.figure, os.path.join(output_dir, f"{stem}_Feature-Correlation-Plot.png"))
+        stdout.write("Pairwise intra/inter feature correlation plot")
+        pairwise_df = X.join(Y)
+        fig = sns.PairGrid(data=pairwise_df, hue=y_label_col)
+        fig.figure.set_size_inches(2 + num_selected_features * 2, 2 + num_selected_features * 2)
+        fig.map_offdiag(sns.scatterplot)
+        fig.map_diag(sns.kdeplot, fill=True)
+        # needed to push title to top
+        fig.figure.suptitle("Feature Intracorrelations and Intercorrelations", y=1)
+        save_fig(fig.figure, os.path.join(output_dir, f"{stem}_Feature-Correlation-Plot.png"))
 
-        # stdout.write("Intra/inter feature correlations heatmap")
-        # fig = sns.heatmap(correlation_df, cmap="Blues", annot=True, fmt=".2f")
-        # fig.figure.set_size_inches(2 + num_selected_features * 0.8, 2 + num_selected_features * 0.8)
-        # set_fig_labels(fig.figure, title="Feature Correlations")
-        # save_fig(fig.figure, os.path.join(output_dir, f"{stem}_Feature-Correlation-Heatmap.png"))
+        stdout.write("Intra/inter feature correlations heatmap")
+        fig = sns.heatmap(correlation_df, cmap="Blues", annot=True, fmt=".2f")
+        fig.figure.set_size_inches(2 + num_selected_features * 0.8, 2 + num_selected_features * 0.8)
+        set_fig_labels(fig.figure, title="Feature Correlations")
+        save_fig(fig.figure, os.path.join(output_dir, f"{stem}_Feature-Correlation-Heatmap.png"))
 
 
         # Visualizing impacts of pairs of variables

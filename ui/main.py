@@ -9,8 +9,9 @@ import sys
 from ui.components.page import Page
 from .input.page import InputPage
 from .files.page import OutputFilesPage
-from .viz.page import VizPage
+from .cluster.page import ClusterPage
 from .pipeline.page import PipelinePage
+from .viz.page import VizPage
 from .help.page import HelpPage
 
 
@@ -27,7 +28,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("IntelliGenes")
+        self.setWindowTitle("IntelliGenes-3D")
 
         layout = QVBoxLayout()
 
@@ -35,7 +36,8 @@ class MainWindow(QMainWindow):
             ("Data Manager", InputPage(self.inputFile, self.outputDir, self.inputPageSignal)),
             ("AI/ML Analysis", PipelinePage(self.inputFile, self.outputDir, self.pipelinePageSignal)),
             ("Visualization", OutputFilesPage(self.inputFile, self.outputDir, self.filesPageSignal)),
-            ("3D", VizPage(self.inputFile, self.outputDir, self.pipelinePageSignal)),
+            ("Clustering", ClusterPage(self.inputFile, self.outputDir, self.pipelinePageSignal)),
+            ("3D Analysis", VizPage(self.inputFile, self.outputDir, self.pipelinePageSignal)),
             ("Help", HelpPage(self.inputFile, self.outputDir, self.demoPageSignal))
         ]
 

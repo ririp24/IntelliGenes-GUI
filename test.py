@@ -11,6 +11,7 @@ import pacmap
 import json
 import re, seaborn as sns
 import numpy as np
+from sklearn.cluster import OPTICS
 
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -41,8 +42,8 @@ def main():
         new_samples = []
         medians = X.median()
         # medians.to_csv(os.path.join(output_dir, f"{stem}_medians.csv"))
-        xvar_range = np.linspace(X[xvar].min(), X[yvar].max(), 30)
-        yvar_range = np.linspace(X[xvar].min(), X[yvar].max(), 30)
+        xvar_range = np.linspace(X[xvar].min(), X[xvar].max(), 30)
+        yvar_range = np.linspace(X[yvar].min(), X[yvar].max(), 30)
 
         for val1 in xvar_range:
             for val2 in yvar_range:
@@ -89,19 +90,29 @@ def main():
         preds = rf.predict_proba(X)[:, 1]
         preds = [pred > 0.5 for pred in preds]
 
+        clusterer = OPTICS(min_samples = 8)
+        clusters = clusterer.fit_predict(X)
 
         fig = plt.figure()
         
         x_low = pd.read_csv('data/X_Low_Final.csv', header=None).to_numpy()
-        ax = fig.add_subplot(1, 2, 1, projection='3d')
-        graph = ax.scatter(x_low[:, 0], x_low[:, 1], x_low[:, 2], c=labels, cmap=cm.bwr, alpha=1.0)
+        ax = fig.add_subplot(1, 3, 1, projection='3d')
+        graph = ax.scatter(x_low[:, 0], x_low[:, 1], x_low[:, 2], c=labels, cmap=sns.diverging_palette(250, 15, center="dark", as_cmap=True), alpha=1.0)
         ax.set_title("Labeled Data")
 
-        ax2 = fig.add_subplot(1, 2, 2, projection='3d', sharex=ax, sharey=ax, sharez=ax)
+        ax2 = fig.add_subplot(1, 3, 2, projection='3d', sharex=ax, sharey=ax, sharez=ax)
         ax2.set_title("Predictions")
-        graph = ax2.scatter(x_low[:, 0], x_low[:, 1], x_low[:, 2], c=preds, cmap=cm.bwr, alpha=1.0)
+        graph = ax2.scatter(x_low[:, 0], x_low[:, 1], x_low[:, 2], c=preds, cmap=sns.diverging_palette(250, 15, center="dark", as_cmap=True), alpha=1.0)
 
         ax.shareview(ax2)
+
+        ax3 = fig.add_subplot(1, 3, 3, projection='3d', sharex=ax, sharey=ax, sharez=ax)
+        ax3.set_title("Clusters")
+        scat = ax3.scatter(x_low[:, 0], x_low[:, 1], x_low[:, 2], c=clusters, cmap=cm.tab10, alpha=1.0)
+        h, l = scat.legend_elements()
+        ax3.legend(handles=h, labels = l)
+
+        ax2.shareview(ax3)
         
         plt.show()
 
